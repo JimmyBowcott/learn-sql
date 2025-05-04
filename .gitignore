@@ -1,0 +1,9 @@
+# data files
+data/
+
+# random commands
+thing
+
+# sensitive database info
+docker-compose.yml
+.env
