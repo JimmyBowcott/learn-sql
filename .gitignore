@@ -1,5 +1,6 @@
 # data files
-data/
+data/create_table.sql
+data/old/
 
 # random commands
 thing
