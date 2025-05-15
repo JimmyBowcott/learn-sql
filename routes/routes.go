@@ -22,9 +22,25 @@ func PostExec(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := string(body)
-	res, err := database.ExecuteQuery(query)
+	res, err := database.ExecuteQuery(query, "DB_CONNECTION_STRING")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to execute querry: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	json.NewEncoder(w).Encode(res)
+}
+
+func GetLevels(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Only GET method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	res, err := database.ExecuteQuery("SELECT * FROM level;", "DB_CONNECTION_STRING_2")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get levels: %v", err), http.StatusInternalServerError)
 		return
 	}
 

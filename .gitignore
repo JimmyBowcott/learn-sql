@@ -1,6 +1,7 @@
 # data files
 data/create_table.sql
 data/old/
+data/create_app_data_table.sql
 
 # random commands
 thing
