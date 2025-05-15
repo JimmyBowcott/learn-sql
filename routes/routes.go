@@ -22,7 +22,7 @@ func PostExec(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := string(body)
-	res, err := database.ExecuteQuery(query, "DB_CONNECTION_STRING")
+	res, err := database.ExecuteQuery(query)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to execute querry: %v", err), http.StatusInternalServerError)
 		return
@@ -38,7 +38,7 @@ func GetLevels(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := database.ExecuteQuery("SELECT * FROM level;", "DB_CONNECTION_STRING_2")
+	res, err := database.GetLevels()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get levels: %v", err), http.StatusInternalServerError)
 		return

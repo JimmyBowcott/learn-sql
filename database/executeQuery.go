@@ -53,8 +53,8 @@ func extractDataFromRows(rows *sql.Rows) ([]map[string]any, error) {
 	return res, nil
 }
 
-func ExecuteQuery(query string, dbName string) ([]map[string]any, error) {
-	connStr := os.Getenv(dbName)
+func ExecuteQuery(query string) ([]map[string]any, error) {
+	connStr := os.Getenv("DB_CONNECTION_STRING")
 	empty := []map[string]any{}
 
 	db, err := sql.Open("postgres", connStr)

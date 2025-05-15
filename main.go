@@ -11,6 +11,22 @@ import (
 	"github.com/joho/godotenv"
 )
 
+func withCORS(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Note to self: remove this for prod
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		h(w, r)
+	}
+}
+
 func init() {
 
 	err := godotenv.Load(".env")
@@ -22,8 +38,8 @@ func init() {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/exec", routes.PostExec)
-	mux.HandleFunc("/levels", routes.GetLevels)
+	mux.HandleFunc("/exec", withCORS(routes.PostExec))
+	mux.HandleFunc("/levels", withCORS(routes.GetLevels))
 	err := http.ListenAndServe(":3456", mux)
 
 	if errors.Is(err, http.ErrServerClosed) {
