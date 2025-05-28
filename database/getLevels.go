@@ -2,30 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/lib/pq"
 )
-
-type CommandSet struct {
-	Clauses   []string `json:"clauses"`
-	Modifiers []string `json:"modifiers"`
-	Operators []string `json:"operators"`
-}
-
-func (c *CommandSet) Scan(value any) error {
-	// I want to point out that this will return null
-	// if a field is not defined in the database.
-	// This is totally not OK but I'm doing it anyway.
-
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("expected []byte, got %T", value)
-	}
-	return json.Unmarshal(bytes, c)
-}
 
 func scanRows(rows *sql.Rows) ([]map[string]any, error) {
 	res := []map[string]any{}
@@ -45,17 +25,14 @@ func scanRow(rows *sql.Rows) (map[string]any, error) {
 		id          int
 		description string
 		tables      pq.Int32Array
-		commands    CommandSet
 	)
 
-	fmt.Println(rows)
-
-	err := rows.Scan(&id, &description, &tables, &commands)
+	err := rows.Scan(&id, &description, &tables)
 	if err != nil {
 		return nil, err
 	}
 
-	return map[string]any{"id": id, "description": description, "tables": tables, "commands": commands}, nil
+	return map[string]any{"id": id, "description": description, "tables": tables}, nil
 }
 
 func GetLevels() ([]map[string]any, error) {

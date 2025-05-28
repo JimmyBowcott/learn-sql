@@ -24,7 +24,7 @@ func PostExec(w http.ResponseWriter, r *http.Request) {
 	query := string(body)
 	res, err := database.ExecuteQuery(query)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to execute querry: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to execute query: %v", err), http.StatusBadRequest)
 		return
 	}
 

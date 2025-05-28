@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	_"github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 func getCols(rows *sql.Rows, length int) ([]any, error) {
