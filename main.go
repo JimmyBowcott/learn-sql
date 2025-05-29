@@ -38,7 +38,7 @@ func init() {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/exec", withCORS(routes.PostExec))
+	mux.HandleFunc("/submit", withCORS(routes.SubmitQuery))
 	mux.HandleFunc("/levels", withCORS(routes.GetLevels))
 	err := http.ListenAndServe(":3456", mux)
 

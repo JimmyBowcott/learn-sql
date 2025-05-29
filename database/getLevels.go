@@ -45,17 +45,29 @@ func GetLevels() ([]map[string]any, error) {
 	}
 	defer db.Close()
 
-	tx, err := db.Begin()
-	if err != nil {
-		return empty, err
-	}
-	defer tx.Rollback()
-
-	rows, err := tx.Query("SELECT * FROM level;")
+	rows, err := db.Query("SELECT id, description, tables FROM level;")
 	if err != nil {
 		return empty, err
 	}
 	defer rows.Close()
 
 	return scanRows(rows)
+}
+
+func GetSolution(level int) (string, error) {
+	connStr := os.Getenv("DB_CONNECTION_STRING_2")
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	var solution string
+	err = db.QueryRow("SELECT solution FROM level WHERE id = $1", level).Scan(&solution)
+	if err != nil {
+		return "", err
+	}
+
+	return solution, nil
 }
