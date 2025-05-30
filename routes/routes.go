@@ -41,13 +41,13 @@ func SubmitQuery(w http.ResponseWriter, r *http.Request) {
 
 	solution, err := database.GetSolution(reqBody.Level)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get solution: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Failed to get solution: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	expectedRes, err := database.ExecuteQuery(solution)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get solution: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Failed to get solution: %v", err), http.StatusInternalServerError)
 		return
 	}
 
