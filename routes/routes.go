@@ -71,3 +71,62 @@ func GetLevels(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	json.NewEncoder(w).Encode(res)
 }
+
+type Credentials struct {
+	Name string	`json:"name"`
+	Pass string	`json:"pass"`
+}
+
+type LoginResponse struct {
+	Name string `json:"name"`
+	Level int 	`json:"level"`
+}
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var reqBody Credentials
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&reqBody); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to read request body: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	user, err := database.GetUser(reqBody.Name)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to find user: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	validPassword := database.ValidateUser(user, reqBody.Pass)
+	if !validPassword {
+		http.Error(w, "Password is incorrect", http.StatusUnauthorized)
+		return
+	}
+
+	json.NewEncoder(w).Encode(LoginResponse{ Name: user.Name, Level: user.Level })
+}
+
+func SignUp(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var reqBody Credentials
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&reqBody); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to read request body: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	err := database.CreateUser(reqBody.Name, reqBody.Pass)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}

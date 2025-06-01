@@ -40,6 +40,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/submit", withCORS(routes.SubmitQuery))
 	mux.HandleFunc("/levels", withCORS(routes.GetLevels))
+	mux.HandleFunc("/login", withCORS(routes.Login))
+	mux.HandleFunc("/signup", withCORS(routes.SignUp))
 	err := http.ListenAndServe(":3456", mux)
 
 	if errors.Is(err, http.ErrServerClosed) {
