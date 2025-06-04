@@ -80,6 +80,7 @@ type Credentials struct {
 type LoginResponse struct {
 	Name string `json:"name"`
 	Level int 	`json:"level"`
+	Token string `json:"token"`
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +108,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(LoginResponse{ Name: user.Name, Level: user.Level })
+	json.NewEncoder(w).Encode(LoginResponse{ Name: user.Name, Level: user.Level, Token: user.Token })
 }
 
 func SignUp(w http.ResponseWriter, r *http.Request) {

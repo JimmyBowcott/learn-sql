@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"os"
  
+	"github.com/JimmyBowcott/learn-sql/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -11,6 +12,7 @@ type User struct {
 	Name string
 	Pass string
 	Level int
+	Token string
 }
 
 func GetUser(username string) (User, error) {
@@ -25,6 +27,11 @@ func GetUser(username string) (User, error) {
 	var user User
 	err = db.QueryRow("SELECT name, pass, level FROM app_user WHERE name = $1;", username).
 			Scan(&user.Name, &user.Pass, &user.Level)
+	if err != nil {
+		return User{}, err
+	}
+
+	user.Token, err = auth.GenerateToken(user.Name, user.Level)
 	if err != nil {
 		return User{}, err
 	}
