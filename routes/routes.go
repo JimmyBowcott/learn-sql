@@ -1,11 +1,12 @@
 package routes
 
 import (
-	"net/http"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"reflect"
 
+	"github.com/JimmyBowcott/learn-sql/auth"
 	"github.com/JimmyBowcott/learn-sql/database"
 )
 
@@ -15,8 +16,9 @@ type SubmitQueryBody struct {
 }
 
 type SubmissionResponse struct {
-	Success bool	`json:"success"`
-	Result any		`json:"result"`
+	Success bool   `json:"success"`
+	Result  any    `json:"result"`
+	Token   string `json:"token"`
 }
 
 func SubmitQuery(w http.ResponseWriter, r *http.Request) {
@@ -52,8 +54,19 @@ func SubmitQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	success := reflect.DeepEqual(userRes, expectedRes)
+	if !success {
+		json.NewEncoder(w).Encode(SubmissionResponse{Success: success, Result: userRes, Token: ""})
+	}
 
-	json.NewEncoder(w).Encode(SubmissionResponse{Success: success, Result: userRes})
+	claims := auth.GetClaims(r)
+	if reqBody.Level > 1 && claims.Level < reqBody.Level {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	token, err := auth.GenerateToken(claims.Username, reqBody.Level+1)
+
+	json.NewEncoder(w).Encode(SubmissionResponse{Success: success, Result: userRes, Token: token})
 }
 
 func GetLevels(w http.ResponseWriter, r *http.Request) {
@@ -73,13 +86,13 @@ func GetLevels(w http.ResponseWriter, r *http.Request) {
 }
 
 type Credentials struct {
-	Name string	`json:"name"`
-	Pass string	`json:"pass"`
+	Name string `json:"name"`
+	Pass string `json:"pass"`
 }
 
 type LoginResponse struct {
-	Name string `json:"name"`
-	Level int 	`json:"level"`
+	Name  string `json:"name"`
+	Level int    `json:"level"`
 	Token string `json:"token"`
 }
 
@@ -108,7 +121,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(LoginResponse{ Name: user.Name, Level: user.Level, Token: user.Token })
+	json.NewEncoder(w).Encode(LoginResponse{Name: user.Name, Level: user.Level, Token: user.Token})
 }
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
