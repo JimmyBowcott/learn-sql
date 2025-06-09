@@ -43,7 +43,7 @@ func ValidateUser(user User, pass string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(user.Pass), []byte(pass)) == nil
 }
 
-func CreateUser(username string, pass string) error {
+func CreateUser(username string, pass string, level int) error {
 	connStr := os.Getenv("DB_CONNECTION_STRING_2")
 
 	db, err := sql.Open("postgres", connStr)
@@ -57,7 +57,7 @@ func CreateUser(username string, pass string) error {
 		return err
 	}
 
-	_, err = db.Exec("INSERT INTO app_user (name, pass, level) VALUES ($1, $2, 1)", username, hashedPass)
+	_, err = db.Exec("INSERT INTO app_user (name, pass, level) VALUES ($1, $2, $3)", username, hashedPass, level)
 	if err != nil {
 		return err
 	}
@@ -67,4 +67,20 @@ func CreateUser(username string, pass string) error {
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
+}
+
+func SetLevel(name string, level int) error {
+	connStr := os.Getenv("DB_CONNECTION_STRING_2")
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	_, err = db.Exec("UPDATE app_user SET level = $1 WHERE name = $2", level, name)	
+	if err != nil {
+		return err
+	}
+	return nil
 }

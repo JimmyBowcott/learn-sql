@@ -65,7 +65,6 @@ func DecodeToken(token string) (*jwt.Token, error) {
 	})
 
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 

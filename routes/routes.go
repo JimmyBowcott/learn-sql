@@ -121,6 +121,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	claims := auth.GetClaims(r)
+	fmt.Println(user.Level, claims.Level)
+	if claims.Level > user.Level {
+		user.Level = claims.Level
+		database.SetLevel(user.Name, claims.Level)
+	}
+
 	json.NewEncoder(w).Encode(LoginResponse{Name: user.Name, Level: user.Level, Token: user.Token})
 }
 
@@ -137,10 +144,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := database.CreateUser(reqBody.Name, reqBody.Pass)
+	claims := auth.GetClaims(r)
+	err := database.CreateUser(reqBody.Name, reqBody.Pass, claims.Level)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusBadRequest)
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 }
