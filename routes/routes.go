@@ -55,7 +55,8 @@ func SubmitQuery(w http.ResponseWriter, r *http.Request) {
 
 	success := reflect.DeepEqual(userRes, expectedRes)
 	if !success {
-		json.NewEncoder(w).Encode(SubmissionResponse{Success: success, Result: userRes, Token: ""})
+		json.NewEncoder(w).Encode(SubmissionResponse{Success: false, Result: userRes, Token: ""})
+		return
 	}
 
 	claims := auth.GetClaims(r)
@@ -64,9 +65,13 @@ func SubmitQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if claims.Username != "" {
+		database.SetLevel(claims.Username, reqBody.Level+1)
+	}
+
 	token, err := auth.GenerateToken(claims.Username, reqBody.Level+1)
 
-	json.NewEncoder(w).Encode(SubmissionResponse{Success: success, Result: userRes, Token: token})
+	json.NewEncoder(w).Encode(SubmissionResponse{Success: true, Result: userRes, Token: token})
 }
 
 func GetLevels(w http.ResponseWriter, r *http.Request) {
@@ -122,7 +127,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	claims := auth.GetClaims(r)
-	fmt.Println(user.Level, claims.Level)
 	if claims.Level > user.Level {
 		user.Level = claims.Level
 		database.SetLevel(user.Name, claims.Level)
