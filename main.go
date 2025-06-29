@@ -8,22 +8,12 @@ import (
 	"os"
 
 	"github.com/JimmyBowcott/learn-sql/routes"
+	"github.com/JimmyBowcott/learn-sql/middleware"
 	"github.com/joho/godotenv"
 )
 
-func withCORS(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Note to self: remove this for prod
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		h(w, r)
-	}
+func Secure(h http.HandlerFunc) http.HandlerFunc {
+	return middleware.CorsMiddleware(middleware.RateLimitMiddleware(h))
 }
 
 func init() {
@@ -37,10 +27,10 @@ func init() {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/submit", withCORS(routes.SubmitQuery))
-	mux.HandleFunc("/levels", withCORS(routes.GetLevels))
-	mux.HandleFunc("/signin", withCORS(routes.Login))
-	mux.HandleFunc("/signup", withCORS(routes.SignUp))
+	mux.HandleFunc("/submit", Secure(routes.SubmitQuery))
+	mux.HandleFunc("/levels", Secure(routes.GetLevels))
+	mux.HandleFunc("/signin", Secure(routes.Login))
+	mux.HandleFunc("/signup", Secure(routes.SignUp))
 	err := http.ListenAndServe(":3456", mux)
 
 	if errors.Is(err, http.ErrServerClosed) {
